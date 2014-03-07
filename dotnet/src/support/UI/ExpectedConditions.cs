@@ -18,91 +18,141 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
-namespace OpenQA.Selenium.Support.UI
-{
-    /// <summary>
-    /// Supplies a set of common conditions that can be waited for using <see cref="WebDriverWait"/>.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// IWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3))
-    /// IWebElement element = wait.Until(ExpectedConditions.ElementExists(By.Id("foo")));
-    /// </code>
-    /// </example>
-    public sealed class ExpectedConditions
-    {
-        /// <summary>
-        /// Prevents a default instance of the <see cref="ExpectedConditions"/> class from being created.
-        /// </summary>
-        private ExpectedConditions()
-        {
-        }
+namespace OpenQA.Selenium.Support.UI {
+	/// <summary>
+	/// Supplies a set of common conditions that can be waited for using <see cref="WebDriverWait"/>.
+	/// </summary>
+	/// <example>
+	/// <code>
+	/// IWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3))
+	/// IWebElement element = wait.Until(ExpectedConditions.ElementExists(By.Id("foo")));
+	/// </code>
+	/// </example>
+	public sealed class ExpectedConditions {
+		/// <summary>
+		/// Prevents a default instance of the <see cref="ExpectedConditions"/> class from being created.
+		/// </summary>
+		private ExpectedConditions() {
+		}
 
-        /// <summary>
-        /// An expectation for checking the title of a page.
-        /// </summary>
-        /// <param name="title">The expected title, which must be an exact match.</param>
-        /// <returns><see langword="true"/> when the title matches; otherwise, <see langword="false"/>.</returns>
-        public static Func<IWebDriver, bool> TitleIs(string title)
-        {
-            return (driver) => { return title == driver.Title; };
-        }
+		/// <summary>
+		/// An expectation for checking the title of a page.
+		/// </summary>
+		/// <param name="title">The expected title, which must be an exact match.</param>
+		/// <returns><see langword="true"/> when the title matches; otherwise, <see langword="false"/>.</returns>
+		public static Func<IWebDriver, bool> TitleIs(string title) {
+			return (driver) => { return title == driver.Title; };
+		}
 
-        /// <summary>
-        /// An expectation for checking that the title of a page contains a case-sensitive substring.
-        /// </summary>
-        /// <param name="title">The fragment of title expected.</param>
-        /// <returns><see langword="true"/> when the title matches; otherwise, <see langword="false"/>.</returns>
-        public static Func<IWebDriver, bool> TitleContains(string title)
-        {
-            return (driver) => { return driver.Title.Contains(title); };
-        }
+		/// <summary>
+		/// An expectation for checking that the title of a page contains a case-sensitive substring.
+		/// </summary>
+		/// <param name="title">The fragment of title expected.</param>
+		/// <returns><see langword="true"/> when the title matches; otherwise, <see langword="false"/>.</returns>
+		public static Func<IWebDriver, bool> TitleContains(string title) {
+			return (driver) => { return driver.Title.Contains(title); };
+		}
 
-        /// <summary>
-        /// An expectation for checking that an element is present on the DOM of a
-        /// page. This does not necessarily mean that the element is visible.
-        /// </summary>
-        /// <param name="locator">The locator used to find the element.</param>
-        /// <returns>The <see cref="IWebElement"/> once it is located.</returns>
-        public static Func<IWebDriver, IWebElement> ElementExists(By locator)
-        {
-            return (driver) => { return driver.FindElement(locator); };
-        }
+		/// <summary>
+		/// An expectation for checking that an element is present on the DOM of a
+		/// page. This does not necessarily mean that the element is visible.
+		/// </summary>
+		/// <param name="locator">The locator used to find the element.</param>
+		/// <returns>The <see cref="IWebElement"/> once it is located.</returns>
+		public static Func<IWebDriver, IWebElement> ElementExists(By locator) {
+			return (driver) => { return driver.FindElement(locator); };
+		}
 
-        /// <summary>
-        /// An expectation for checking that an element is present on the DOM of a page
-        /// and visible. Visibility means that the element is not only displayed but
-        /// also has a height and width that is greater than 0.
-        /// </summary>
-        /// <param name="locator">The locator used to find the element.</param>
-        /// <returns>The <see cref="IWebElement"/> once it is located and visible.</returns>
-        public static Func<IWebDriver, IWebElement> ElementIsVisible(By locator)
-        {
-            return (driver) =>
-                {
-                    try
-                    {
-                        return ElementIfVisible(driver.FindElement(locator));
-                    }
-                    catch (StaleElementReferenceException)
-                    {
-                        return null;
-                    }
-                };
-        }
+		/// <summary>
+		/// An expectation for checking that an element is visible on the a page.
+		/// Visibility means that the element is not only displayed but
+		/// also has a height and width that is greater than 0.
+		/// </summary>
+		/// <param name="locator">The locator used to find the element.</param>
+		/// <returns>The <see cref="IWebElement"/> once it is located and visible.</returns>
+		public static Func<IWebDriver, IWebElement> ElementIsVisible(By locator) {
+			return (driver) => {
+				try {
+					return ElementIfVisible(driver.FindElement(locator));
+				} catch (StaleElementReferenceException) {
+					return null;
+				}
+			};
+		}
 
-        private static IWebElement ElementIfVisible(IWebElement element)
-        {
-            if (element.Displayed)
-            {
-                return element;
-            }
-            else
-            {
-                return null;
-            }
-        }
-    }
+		/// <summary>
+		/// An expectation for checking that an element is visible on the a page.
+		/// Visibility means that the element is not only displayed but
+		/// also has a height and width that is greater than 0.
+		/// </summary>
+		/// <param name="element">The target element.</param>
+		/// <returns>The <see cref="IWebElement"/> once it is visible.</returns>
+		public static Func<IWebDriver, IWebElement> ElementIsVisible(IWebElement element) {
+			return (driver) => {
+				try {
+					return ElementIfVisible(element);
+				} catch (StaleElementReferenceException) {
+					return null;
+				}
+			};
+		}
+
+		/// <summary>
+		/// An expectation for checking that an element is visible and enabled such that you can click it.
+		/// </summary>
+		/// <param name="locator">The locator used to find the element.</param>
+		/// <returns>The <see cref="IWebElement"/> once it is clickable  (visible and enabled).</returns>
+		public static Func<IWebDriver, IWebElement> ElementIsClickable(By locator) {
+			return (driver) => {
+				IWebElement element = ElementIsVisible(locator).Invoke(driver);
+				try {
+					if (element != null && element.Enabled) {
+						return element;
+					}
+					return null;
+				} catch (StaleElementReferenceException) {
+					return null;
+				}
+			};
+		}
+
+		/// <summary>
+		/// An expectation for checking that an element is visible and enabled such that you can click it.
+		/// </summary>
+		/// <param name="element">The target element.</param>
+		/// <returns>The <see cref="IWebElement"/> once it is located and clickable  (visible and enabled).</returns>
+		public static Func<IWebDriver, IWebElement> ElementIsClickable(IWebElement element) {
+			return (driver) => {
+				element = ElementIsVisible(element).Invoke(driver);
+				try {
+					if (element != null && element.Enabled) {
+						return element;
+					}
+					return null;
+				} catch (StaleElementReferenceException) {
+					return null;
+				}
+			};
+		}
+
+		/// <summary>
+		/// An expectation for checking that an alert is present on the page.
+		/// </summary>
+		/// <returns>The <see cref="IAlert"/> once it is present.</returns>
+		public static Func<IWebDriver, IAlert> AlertIsPresent() {
+			return (driver) => {
+				try {
+					return driver.SwitchTo().Alert();
+				} catch (NoAlertPresentException) {
+					return null;
+				}
+			};
+		}
+
+		private static IWebElement ElementIfVisible(IWebElement element) {
+			return element.Displayed ? element : null;
+		}
+	}
 }
